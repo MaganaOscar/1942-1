@@ -63,9 +63,38 @@
 
 	<div id='score'>100</div>
 
+	1. Display the hero
+	2. Make the hero move up/down/left/right 
+	3. Diplay all the enemies
+	4. Make the enemies move
+	5. When spacebar is pressed, have the hero shoot a bullet
 
 <script>
 
+	var hero = {
+		x: 300,
+		y: 300
+	}
+
+	function displayHero(){
+		document.getElementById('hero').style['top'] = hero.y + "px";
+		document.getElementById('hero').style['left'] = hero.x + "px";
+	}
+
+	document.onkeydown = function(a) {
+		if(a.keyCode == 65) {
+			hero.x -= 10;
+		} else if (a.keyCode == 68) {
+			hero.x += 10;
+		} else if (a.keyCode == 87) {
+			hero.y -= 10;
+		} else if (a.keyCode = 83) {
+			hero.y += 10;
+		}
+		displayHero();
+	}
+
+	displayHero();
 </script>
 
 </body>
