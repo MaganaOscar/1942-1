@@ -62,6 +62,10 @@
 		height: 28px;
 		position: absolute;
 	}
+	.instructions {
+		color:white;
+		
+	}
 </style>
 </head>
 <body>
@@ -82,15 +86,15 @@
 
 	<div id='score'>100</div>
 
-	1. Display the hero
-	2. Make the hero move up/down/left/right 
-	3. Diplay all the enemies
-	4. Make the enemies move
-	5. When spacebar is pressed, have the hero shoot a bullet
+	<div class="instructions">
+		<p>Use W/A/S/D or Arrow keys to contol your hero</p>
+		<p>Share your highest score!</p>
+	</div>
 
 <script>
 	var audio = new Audio('Howie-scream/Howie-scream.mp3');
 	var audioShoot = new Audio('KickWhoosh FS041103.mp3');
+	var audioDeath = new Audio('Scary Scream.mp3');
 
 	var hero = {
 		x: 300,
@@ -211,7 +215,7 @@
 				}
 			}
 			for(var j = 0; j < bombers.length; j++) {
-				if(Math.abs(bullets[i].x - bombers[j].x - 25) < 35 && Math.abs(bullets[i].y - bombers[j].y) < 35) {
+				if(Math.abs(bullets[i].x - bombers[j].x - 22) < 28 && Math.abs(bullets[i].y - bombers[j].y) < 35) {
 					bullets[i] = bullets[bullets.length-1];
 					bullets.pop();
 					bombers[j].hp--;
@@ -236,16 +240,20 @@
 				}
 				enemies[i].y = 0; 
 				enemies[i].x = Math.random()*700;
+				audioDeath.load();
+				audioDeath.play();
 			}
 		}
 		for(var i = 0; i < bombers.length; i++) {
-			if(Math.abs(bombers[i].x - hero.x)  < 15 && Math.abs(bombers[i].y - hero.y) < 35) {
+			if(Math.abs(bombers[i].x - hero.x + 25)  < 15 && (Math.abs(bombers[i].y - hero.y) < 35) || (Math.abs(bombers[i].y + hero.y) < 35)) {
 				score -= 1000;
 				if(score < 0) {
 					score = 0;
 				}
 				bombers[i].y = 0; 
 				bombers[i].x = Math.random()*700;
+				audioDeath.load();
+				audioDeath.play();
 			}
 		}
 	}
@@ -255,7 +263,7 @@
 		if(bombers.length < 3) {
 			bombers.push({x: Math.random()*700, y: 0, hp: 10})
 		}
-	}, 1000)
+	}, 10000)
 
 	document.onkeydown = function(a) {
 		if(a.key == 'a' || a.key == 'ArrowLeft') {
