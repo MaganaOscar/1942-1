@@ -3,6 +3,10 @@
 	<title>1942 Game</title>
 
 <style type="text/css">
+	@font-face {
+		font-family: 'freakshow';
+		src: url('/freakshow/Freakshow.otf');
+	}
 	body{
 		background-color:black;
 	}
@@ -24,6 +28,15 @@
 		width:28px;
 		height:28px;
 		position:absolute;
+		transform: rotate(180deg);
+	}
+	.enemy2{
+		background: url('1942.gif');
+		background-position: -35px -104px;
+		width: 56px;
+		height: 56px;
+		position: absolute;
+		transform: rotate(180deg);
 	}
 	.bullet{
 		background: url('1942.gif');
@@ -40,24 +53,30 @@
 		background-color:white;
 		padding:10px;
 		font-size:30px;
-		font-family: Arial;	
+		font-family: 'freakshow';	
+	}
+	.explosion{
+		background: url('1942.gif');
+		background-position: -1px -393px;
+		width: 28px;
+		height: 28px;
+		position: absolute;
 	}
 </style>
 </head>
 <body>
 	<div id='container'>
 		<div id='hero' style='top:300px; left:300px;'></div>
-		<div id='enemies'>
-			<div class='enemy1' style='top:100px; left:100px;'></div>
-			<div class='enemy1' style='top:100px; left:200px;'></div>
-			<div class='enemy1' style='top:100px; left:300px;'></div>
-			<div class='enemy1' style='top:100px; left:400px;'></div>
+		<div id='enemies'>	
+		</div>
+		<div id="bombers">
+
+		</div>
+		<div id="explosion">
+
+		</div>
 		</div>
 		<div id='bullets'>
-			<div class='bullet' style='top:150px; left:200px;'></div>
-			<div class='bullet' style='top:250px; left:200px;'></div>
-			<div class='bullet' style='top:350px; left:200px;'></div>
-			<div class='bullet' style='top:450px; left:200px;'></div>
 		</div>	
 	</div>
 
@@ -70,16 +89,173 @@
 	5. When spacebar is pressed, have the hero shoot a bullet
 
 <script>
+	var audio = new Audio('Howie-scream/Howie-scream.mp3');
+	var audioShoot = new Audio('KickWhoosh FS041103.mp3');
 
 	var hero = {
 		x: 300,
-		y: 300
+		y: 400
 	}
+
+	var score = 0;
+	var bomberTimer = 0;
+	var enemies = [{x: 50, y: 50}, {x: 250, y:50}, {x: 450, y:250}, {x:550, y: 50},
+					{x: 300, y: 100}, {x: 150, y: 75}, {x:300, y:100}];
+
+	var bombers = [];
+	var explosions = [];
+	var bullets = [];
 
 	function displayHero(){
 		document.getElementById('hero').style['top'] = hero.y + "px";
 		document.getElementById('hero').style['left'] = hero.x + "px";
 	}
+
+	function displayEnemies(){
+		var output = "";
+		for (var i = 0; i < enemies.length; i++) {
+			output += "<div class='enemy1' style='top:" + enemies[i].y + "px; left:" + enemies[i].x +"px; '></div>";
+		}
+		document.getElementById('enemies').innerHTML = output;
+	}
+
+	function displayBombers() {
+		var output = "";
+		for (var i = 0; i < bombers.length; i++) {
+			output += "<div class='enemy2' style='top:" + bombers[i].y + "px; left:" + bombers[i].x +"px; '></div>";
+		}
+		document.getElementById('bombers').innerHTML = output;
+
+	}
+	function moveBombers() {
+		for (var i = 0; i < bombers.length; i++) {
+			bombers[i].y += 3;
+
+			if(bombers[i].y > 510) {
+				bombers[i].y = 0; 
+				bombers[i].x = Math.random()*700;
+			}
+		}
+	}
+
+	function moveEnemies() {
+		for (var i = 0; i < enemies.length; i++) {
+			enemies[i].y += 5;
+
+			if(enemies[i].y > 530) {
+				enemies[i].y = 0; 
+				enemies[i].x = Math.random()*700;
+			}
+		}
+	}
+	function moveBullets() {
+		for (var i = 0; i < bullets.length; i++) {
+			bullets[i].y -= 5;
+
+			if(bullets[i].y < 0) {
+				bullets.shift();
+			}
+		}
+	}
+
+	function displayExplosions() {
+		var output = "";
+		for (var i = 0; i < explosions.length; i++) {
+			output += "<div class='explosion' style='top:" + explosions[i].y + "px; left:" + explosions[i].x +"px;'></div>";
+			explosions[i].timer -= 1;
+			if(explosions[i].timer === 0) {
+				explosions[i] = explosions[explosions.length-1];
+				explosions.pop();
+			}
+		}
+		document.getElementById('explosion').innerHTML = output;
+	}
+
+	function displayBullets() {
+		var output = "";
+		for (var i = 0; i < bullets.length; i++) {
+			output += "<div class='bullet' style='top:" + bullets[i].y + "px; left:" + bullets[i].x +"px;'></div>";
+		}
+		document.getElementById('bullets').innerHTML = output;
+	}
+
+	function displayScore() {
+		document.getElementById('score').innerHTML = score;
+	}
+	
+	function gameLoop() {
+		displayHero();
+		moveEnemies();
+		displayBombers();
+		moveBombers();
+		displayEnemies();
+		moveBullets();
+		displayBullets();
+		displayExplosions();
+		detectCollision();
+		displayScore();
+	}
+
+	function detectCollision() {
+		for(var i = 0; i < bullets.length; i++) {
+			for(var j = 0; j < enemies.length; j++) {
+				if(Math.abs(bullets[i].x - enemies[j].x) < 15 && Math.abs(bullets[i].y - enemies[j].y) < 25) {
+					score += 10; 
+					explosions.push({x: enemies[j].x, y: enemies[j].y+5, timer: 2 });
+					enemies[j].y = 0; 
+					enemies[j].x = Math.random()*700;
+					bullets[i] = bullets[bullets.length-1];
+					bullets.pop();
+					audio.load();
+					audio.play();
+				}
+			}
+			for(var j = 0; j < bombers.length; j++) {
+				if(Math.abs(bullets[i].x - bombers[j].x - 25) < 35 && Math.abs(bullets[i].y - bombers[j].y) < 35) {
+					bullets[i] = bullets[bullets.length-1];
+					bullets.pop();
+					bombers[j].hp--;
+					if(bombers[j].hp === 0) {
+						score += 100;
+						
+						explosions.push({x: bombers[j].x, y: bombers[j].y+5, timer: 2 });
+						bombers[j].y = 0;
+						bombers[j].x = Math.random()*700;
+						bombers[j].hp = 10;
+						audio.load();
+						audio.play();
+					};
+				}
+			}
+		}
+		for(var i = 0; i < enemies.length; i++) {
+			if(Math.abs(enemies[i].x - hero.x)  < 15 && Math.abs(enemies[i].y - hero.y) < 15) {
+				score -= 500;
+				if(score < 0) {
+					score = 0;
+				}
+				enemies[i].y = 0; 
+				enemies[i].x = Math.random()*700;
+			}
+		}
+		for(var i = 0; i < bombers.length; i++) {
+			if(Math.abs(bombers[i].x - hero.x)  < 15 && Math.abs(bombers[i].y - hero.y) < 35) {
+				score -= 1000;
+				if(score < 0) {
+					score = 0;
+				}
+				bombers[i].y = 0; 
+				bombers[i].x = Math.random()*700;
+			}
+		}
+	}
+
+	setInterval(gameLoop, 40);
+	setInterval( () => {
+		if(bombers.length < 3) {
+			bombers.push({x: Math.random()*700, y: 0, hp: 10})
+		}
+	}, 1000)
 
 	document.onkeydown = function(a) {
 		if(a.keyCode == 65) {
@@ -88,13 +264,15 @@
 			hero.x += 10;
 		} else if (a.keyCode == 87) {
 			hero.y -= 10;
-		} else if (a.keyCode = 83) {
+		} else if (a.keyCode == 83) {
 			hero.y += 10;
+		} else if (a.keyCode == 32) {
+			bullets.push({x: hero.x+6, y: hero.y-12});
+			displayBullets();
+			audioShoot.load();
+			audioShoot.play();
 		}
-		displayHero();
 	}
-
-	displayHero();
 </script>
 
 </body>
