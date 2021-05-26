@@ -258,15 +258,15 @@
 	}, 1000)
 
 	document.onkeydown = function(a) {
-		if(a.keyCode == 65) {
+		if(a.key == 'a' || a.key == 'ArrowLeft') {
 			hero.x -= 10;
-		} else if (a.keyCode == 68) {
+		} else if (a.key == 'd' || a.key == 'ArrowRight') {
 			hero.x += 10;
-		} else if (a.keyCode == 87) {
+		} else if (a.key == 'w' || a.key == 'ArrowUp') {
 			hero.y -= 10;
-		} else if (a.keyCode == 83) {
+		} else if (a.key == 's' || a.key == 'ArrowDown') {
 			hero.y += 10;
-		} else if (a.keyCode == 32) {
+		} else if (a.key == ' ') {
 			bullets.push({x: hero.x+6, y: hero.y-12});
 			displayBullets();
 			audioShoot.load();
