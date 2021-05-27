@@ -11,9 +11,18 @@
 		background-color:black;
 	}
 	#container{
-		background: url('background.jpg');
+		background: url('background2.jpg') repeat;
 		width:1000px;
 		height:550px;
+		animation: movingBackground 17s linear infinite;
+	}
+	@keyframes movingBackground {
+		0% {
+			background-position: 0 0;
+		}
+		100% {
+			background-position: 0 560px;
+		}
 	}
 	#hero{
 		background: url('1942.gif');
